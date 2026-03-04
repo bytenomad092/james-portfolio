@@ -1,9 +1,8 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { Calendar, MapPin, ChevronDown, ChevronUp } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Calendar, MapPin, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
-import { staggerContainer, fadeLeft, fadeUp } from '@/lib/animations'
 
 type Achievement = { metric: string; description: string }
 
@@ -21,15 +20,15 @@ const jobs: Job[] = [
   {
     id: 'BOT',
     company: 'Blue Ocean Technology, LLC',
-    role: 'Staff Frontend Engineer, AI & Infrastructure',
+    role: 'Senior Frontend Engineer, AI & Infrastructure',
     period: 'Jan 2025 – Present',
     location: 'Remote, USA',
     accentColor: '#818cf8',
     achievements: [
-      { metric: '+40% delivery speed · 97% CSAT',       description: 'Architected unified Next.js/React infrastructure across 15+ enterprise applications' },
-      { metric: '50%+ latency reduction',                description: 'Integrated Vercel AI SDK + LLM streaming via SSE into live dashboards' },
-      { metric: 'Onboarding: weeks → days',              description: 'Established modular monorepo with shared Tailwind CSS / Storybook component libraries' },
-      { metric: '600+ engineering hours/year recovered', description: 'Engineered Python-based CI/CD pipeline + automated performance telemetry' },
+      { metric: '+40% delivery · 97% CSAT',       description: 'Architected unified Next.js/React infrastructure across 15+ enterprise applications' },
+      { metric: '50%+ latency cut',                description: 'Integrated Vercel AI SDK + LLM streaming via SSE into live dashboards' },
+      { metric: 'Weeks → Days onboarding',         description: 'Established modular monorepo with shared Tailwind CSS / Storybook component libraries' },
+      { metric: '600+ hrs/yr recovered',           description: 'Engineered Python-based CI/CD pipeline + automated performance telemetry' },
     ],
   },
   {
@@ -37,13 +36,13 @@ const jobs: Job[] = [
     company: 'Wolf Careers Inc.',
     role: 'Lead Frontend Engineer',
     period: 'Mar 2019 – Dec 2024',
-    location: 'Chicago, IL, USA',
+    location: 'Cleveland, OH, USA',
     accentColor: '#a78bfa',
     achievements: [
-      { metric: '+18% completion · +25% engagement',  description: 'Led 8-engineer team rebuilding Fortune 500 HR platform (React · TypeScript · Supabase)' },
-      { metric: '-40% manual review time',            description: 'Built Python/Flask REST API for automated resume parsing + multi-modal scoring' },
-      { metric: '-25% sync errors',                   description: 'Architected Workday + Greenhouse ATS integration vendor management system' },
-      { metric: '-15% sprint delivery cycles',        description: 'Standardized Redux Toolkit + React Testing Library workflows org-wide' },
+      { metric: '+18% completion · +25% engagement', description: 'Led 8-engineer team rebuilding Fortune 500 HR platform (React · TypeScript · Supabase)' },
+      { metric: '-40% manual review time',           description: 'Built Python/Flask REST API for automated resume parsing + multi-modal scoring' },
+      { metric: '-25% sync errors',                  description: 'Architected Workday + Greenhouse ATS integration vendor management system' },
+      { metric: '-15% sprint cycles',                description: 'Standardized Redux Toolkit + React Testing Library workflows org-wide' },
     ],
   },
   {
@@ -54,178 +53,168 @@ const jobs: Job[] = [
     location: 'Menlo Park, CA, USA',
     accentColor: '#c084fc',
     achievements: [
-      { metric: '-2.3s TTI on low-bandwidth',        description: 'Rendering path optimization for Ads Manager (React/Redux) — $4B+ annual ad spend' },
-      { metric: '95% UI regressions blocked',        description: 'Pioneered Python visual regression testing framework integrated into CI/CD' },
-      { metric: '-18% build time · improved HMR',   description: 'Migrated 9 Webpack architectures to Vite across product surfaces' },
-      { metric: '-30% production bug rate',          description: 'Mentored 5 mid-level engineers · instituted code review governance + Git workflows' },
+      { metric: '-2.3s TTI low-bandwidth',    description: 'Rendering path optimization for Ads Manager (React/Redux) — $4B+ annual ad spend' },
+      { metric: '95% UI regressions blocked', description: 'Pioneered Python visual regression testing framework integrated into CI/CD' },
+      { metric: '-18% build time',            description: 'Migrated 9 Webpack architectures to Vite across product surfaces' },
+      { metric: '-30% production bugs',       description: 'Mentored 5 engineers · instituted code review governance + Git workflows' },
     ],
   },
   {
     id: 'GOOG',
     company: 'Google LLC',
-    role: 'Software Engineer III (L4), Frontend Learning',
+    role: 'Software Developer Intern',
     period: 'Jun 2013 – Jul 2016',
     location: 'Mountain View, CA, USA',
     accentColor: '#e879f9',
     achievements: [
-      { metric: '<200ms latency · 3B+ users',       description: 'Engineered real-time streaming UI for AI-assisted writing in Google Docs' },
-      { metric: 'Lighthouse 68 → 94 (+38 pts)',     description: 'Rebuilt shared React component library across 12 Google Workspace product surfaces' },
-      { metric: '+21% QoQ AI feature engagement',  description: 'Built Python/FastAPI telemetry pipeline for behavioral recommendation model fine-tuning' },
-      { metric: '52% → 89% test coverage',         description: 'Elevated unit test coverage + resolved 400+ WCAG 2.1 AA violations' },
+      { metric: '<200ms latency · 3B+ users', description: 'Engineered real-time streaming UI for AI-assisted writing in Google Docs' },
+      { metric: 'Lighthouse 68 → 94',         description: 'Rebuilt shared React component library across 12 Google Workspace product surfaces' },
+      { metric: '+21% QoQ AI engagement',     description: 'Built Python/FastAPI telemetry pipeline for behavioral recommendation model fine-tuning' },
+      { metric: '52% → 89% test coverage',   description: 'Elevated unit tests + resolved 400+ WCAG 2.1 AA violations' },
     ],
   },
 ]
 
-function JobCard({ job, defaultOpen = false, index }: { job: Job; defaultOpen?: boolean; index: number }) {
-  const [open, setOpen] = useState(defaultOpen)
-
+// ── Achievement tile ───────────────────────────────────────────────
+function AchievementTile({ a, color, delay }: { a: Achievement; color: string; delay: number }) {
   return (
     <motion.div
-      variants={fadeLeft}
-      className="flex gap-0 items-stretch"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.3 }}
+      className="relative p-4 rounded-xl overflow-hidden group/ach"
+      style={{
+        background: `${color}07`,
+        border: `1px solid ${color}1e`,
+        transition: 'border-color 0.2s, box-shadow 0.2s',
+      }}
+      onMouseEnter={(e) => {
+        ;(e.currentTarget as HTMLElement).style.borderColor = `${color}40`
+        ;(e.currentTarget as HTMLElement).style.boxShadow = `0 0 18px ${color}18`
+      }}
+      onMouseLeave={(e) => {
+        ;(e.currentTarget as HTMLElement).style.borderColor = `${color}1e`
+        ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+      }}
     >
-      {/* ── Timeline node ── */}
-      <div className="hidden lg:flex flex-col items-center mr-6 flex-shrink-0">
-        {/* Dot */}
-        <motion.div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-[10px] font-black text-white flex-shrink-0 z-10 mt-4"
-          style={{
-            background: `linear-gradient(135deg, ${job.accentColor}30, ${job.accentColor}15)`,
-            border: `1.5px solid ${job.accentColor}60`,
-            boxShadow: `0 0 14px ${job.accentColor}35`,
-          }}
-          whileHover={{
-            scale: 1.15,
-            boxShadow: `0 0 24px ${job.accentColor}70`,
-            transition: { duration: 0.2 },
-          }}
-        >
-          {job.id.slice(0, 2)}
-        </motion.div>
-        {/* Animated line segment */}
-        <motion.div
-          className="flex-1 w-px mt-1"
-          style={{ background: `linear-gradient(180deg, ${job.accentColor}40, transparent)`, transformOrigin: 'top' }}
-          initial={{ scaleY: 0 }}
-          whileInView={{ scaleY: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, delay: 0.3 + index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-        />
-      </div>
-
-      {/* ── Card ── */}
-      <motion.div
-        className="flex-1 overflow-hidden rounded-2xl transition-all duration-300 mb-4"
-        style={{
-          background: open ? 'linear-gradient(145deg, #130c24, #1a0f2e)' : '#100a1e',
-          border: `1px solid ${open ? `${job.accentColor}35` : 'rgba(139,92,246,0.12)'}`,
-          boxShadow: open ? `0 0 28px ${job.accentColor}12` : 'none',
-        }}
-        whileHover={!open ? {
-          borderColor: `${job.accentColor}30`,
-          boxShadow: `0 0 20px ${job.accentColor}10`,
-          y: -2,
-          transition: { duration: 0.2 },
-        } : {}}
+      <span
+        className="text-[9px] font-black uppercase tracking-wide mb-2.5 px-2 py-0.5 rounded-md inline-block"
+        style={{ background: `${color}20`, color, border: `1px solid ${color}30`, boxShadow: `0 0 8px ${color}20` }}
       >
-        {/* Accent top bar when open */}
-        {open && (
-          <motion.div
-            className="h-0.5 w-full"
-            style={{ background: `linear-gradient(90deg, transparent, ${job.accentColor}, transparent)` }}
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.4 }}
-          />
-        )}
-
-        {/* Header */}
-        <button
-          type="button"
-          className="w-full p-6 flex items-start justify-between gap-4 text-left"
-          onClick={() => setOpen(!open)}
-        >
-          <div className="flex items-start gap-4">
-            {/* Mobile dot */}
-            <div
-              className="lg:hidden w-3 h-3 rounded-full mt-1.5 flex-shrink-0"
-              style={{ background: job.accentColor, boxShadow: `0 0 8px ${job.accentColor}` }}
-            />
-            <div>
-              <div className="text-[10px] font-medium text-slate-500 uppercase tracking-widest mb-1">{job.id}</div>
-              <h3 className="text-base font-bold text-white mb-0.5">{job.company}</h3>
-              <p className="text-sm font-semibold" style={{ color: job.accentColor }}>{job.role}</p>
-              <div className="flex flex-wrap gap-4 mt-2">
-                <span className="flex items-center gap-1 text-xs text-slate-500">
-                  <Calendar className="w-3 h-3" />{job.period}
-                </span>
-                <span className="flex items-center gap-1 text-xs text-slate-500">
-                  <MapPin className="w-3 h-3" />{job.location}
-                </span>
-              </div>
-            </div>
-          </div>
-          <motion.div
-            className="flex-shrink-0 mt-1 text-slate-500"
-            animate={{ rotate: open ? 180 : 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </motion.div>
-        </button>
-
-        {/* Expandable content */}
-        <motion.div
-          initial={false}
-          animate={{ height: open ? 'auto' : 0, opacity: open ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
-          className="overflow-hidden"
-        >
-          <motion.div
-            className="px-6 pb-6 border-t"
-            style={{ borderColor: `${job.accentColor}15` }}
-            initial="hidden"
-            animate={open ? 'visible' : 'hidden'}
-            variants={{
-              hidden: {},
-              visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
-            }}
-          >
-            <div className="mt-5 space-y-4">
-              {job.achievements.map((a, i) => (
-                <motion.div
-                  key={i}
-                  className="flex gap-3"
-                  variants={fadeUp}
-                >
-                  <div
-                    className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
-                    style={{ background: job.accentColor }}
-                  />
-                  <div>
-                    <p className="text-sm text-slate-300 leading-relaxed">{a.description}</p>
-                    <motion.span
-                      className="inline-block mt-1.5 text-[10px] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide"
-                      style={{
-                        background: `${job.accentColor}15`,
-                        color: job.accentColor,
-                        border: `1px solid ${job.accentColor}25`,
-                      }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      {a.metric}
-                    </motion.span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </motion.div>
-      </motion.div>
+        {a.metric}
+      </span>
+      <p className="text-xs text-slate-400 leading-relaxed">{a.description}</p>
+      <div
+        className="absolute -bottom-5 -right-5 w-16 h-16 rounded-full blur-xl opacity-0 group-hover/ach:opacity-100 transition-opacity duration-300"
+        style={{ background: color }}
+      />
     </motion.div>
   )
 }
 
+// ── Job card ──────────────────────────────────────────────────────
+function JobCard({ job, num, defaultOpen = false }: { job: Job; num: number; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden transition-all duration-300"
+      style={{
+        background: 'linear-gradient(145deg, #130c24, #1a0f2e)',
+        borderTop: `1px solid ${open ? `${job.accentColor}40` : 'rgba(139,92,246,0.12)'}`,
+        borderRight: `1px solid ${open ? `${job.accentColor}40` : 'rgba(139,92,246,0.12)'}`,
+        borderBottom: `1px solid ${open ? `${job.accentColor}40` : 'rgba(139,92,246,0.12)'}`,
+        borderLeft: `3px solid ${job.accentColor}`,
+        boxShadow: open ? `0 0 40px ${job.accentColor}12, -4px 0 20px ${job.accentColor}20, 0 12px 40px rgba(0,0,0,0.35)` : `0 0 0 0`,
+      }}
+    >
+      {/* Clickable header */}
+      <button
+        type="button"
+        className="w-full text-left group"
+        onClick={() => setOpen(!open)}
+      >
+        <div
+          className="px-7 pt-7 pb-6 relative overflow-hidden transition-colors duration-300"
+          style={{ background: open ? `linear-gradient(135deg, ${job.accentColor}10 0%, transparent 65%)` : 'transparent' }}
+        >
+          {/* Ghost number — decorative */}
+          <span
+            className="absolute top-2 right-5 text-8xl font-black leading-none pointer-events-none select-none"
+            style={{ color: job.accentColor, opacity: 0.055 }}
+          >
+            {String(num).padStart(2, '0')}
+          </span>
+
+          {/* Current badge */}
+          {job.id === 'BOT' && (
+            <motion.div
+              className="inline-flex items-center gap-1.5 mb-4 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider"
+              style={{ background: 'rgba(16,185,129,0.1)', color: '#34d399', border: '1px solid rgba(16,185,129,0.28)' }}
+              animate={{ boxShadow: ['0 0 0 0 rgba(16,185,129,0.35)', '0 0 0 8px rgba(16,185,129,0)', '0 0 0 0 rgba(16,185,129,0)'] }}
+              transition={{ duration: 2.5, repeat: Infinity }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+              Current Role
+            </motion.div>
+          )}
+
+          <div className="flex items-start justify-between gap-6">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xl sm:text-2xl font-black text-white mb-1.5 leading-tight group-hover:text-violet-100 transition-colors">
+                {job.company}
+              </h3>
+              <p className="text-sm font-semibold mb-4" style={{ color: job.accentColor }}>
+                {job.role}
+              </p>
+              <div className="flex flex-wrap gap-5">
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                  {job.period}
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                  {job.location}
+                </span>
+              </div>
+            </div>
+            <motion.div
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
+              style={{ background: `${job.accentColor}12`, border: `1px solid ${job.accentColor}28` }}
+              animate={{ rotate: open ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ChevronDown className="w-4 h-4" style={{ color: job.accentColor }} />
+            </motion.div>
+          </div>
+        </div>
+      </button>
+
+      {/* Expandable achievement grid */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 pb-6 pt-1" style={{ borderTop: `1px solid ${job.accentColor}18` }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+                {job.achievements.map((a, i) => (
+                  <AchievementTile key={i} a={a} color={job.accentColor} delay={i * 0.07} />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ── Section ───────────────────────────────────────────────────────
 export default function Experience() {
   return (
     <section
@@ -233,21 +222,20 @@ export default function Experience() {
       className="relative py-28 md:py-32 overflow-hidden"
       style={{ background: '#06030d' }}
     >
-      {/* Glow */}
-      <div className="absolute top-1/3 right-0 w-[450px] h-[450px] rounded-full bg-violet-900/10 blur-[110px] pointer-events-none" />
-      <div className="absolute bottom-1/3 left-0 w-[300px] h-[300px] rounded-full bg-fuchsia-900/8 blur-[90px] pointer-events-none" />
+      <div className="absolute top-1/4 right-0 w-[500px] h-[500px] rounded-full bg-violet-900/12 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] rounded-full bg-fuchsia-900/10 blur-[100px] pointer-events-none" />
 
       <div className="container relative z-10">
+
+        {/* Heading */}
         <motion.div
-          className="mb-14"
+          className="mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <span className="section-label-bright mb-5 inline-flex">
-            Career Timeline
-          </span>
+          <span className="section-label-bright mb-5 inline-flex">Career Timeline</span>
           <h2 className="text-4xl sm:text-5xl font-black text-white mt-5 mb-4 tracking-tight leading-tight">
             Professional{' '}
             <span className="gradient-text">Experience</span>
@@ -257,17 +245,55 @@ export default function Experience() {
           </p>
         </motion.div>
 
-        <motion.div
-          className="max-w-3xl"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-60px' }}
-        >
-          {jobs.map((job, i) => (
-            <JobCard key={job.id} job={job} defaultOpen={i === 0} index={i} />
-          ))}
-        </motion.div>
+        {/* Timeline */}
+        <div className="max-w-3xl relative">
+
+          {/* Glowing spine — hidden on mobile */}
+          <motion.div
+            className="absolute left-5 top-6 bottom-6 w-px hidden md:block pointer-events-none"
+            style={{
+              background: 'linear-gradient(180deg, #818cf8 0%, #a78bfa 33%, #c084fc 66%, #e879f9 100%)',
+              boxShadow: '0 0 10px rgba(167,139,250,0.45)',
+            }}
+            initial={{ scaleY: 0, transformOrigin: 'top' }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          />
+
+          <div className="space-y-4 md:pl-16">
+            {jobs.map((job, i) => (
+              <div key={job.id} className="relative">
+
+                {/* Timeline dot */}
+                <motion.div
+                  className="hidden md:block absolute -left-[50px] top-[28px] w-3 h-3 rounded-full z-10"
+                  style={{
+                    background: job.accentColor,
+                    boxShadow: `0 0 8px ${job.accentColor}, 0 0 18px ${job.accentColor}80, 0 0 32px ${job.accentColor}35`,
+                  }}
+                  initial={{ scale: 0 }}
+                  whileInView={{ scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 18, delay: i * 0.1 }}
+                  whileHover={{ scale: 1.8, transition: { duration: 0.18 } }}
+                />
+
+                {/* Card */}
+                <motion.div
+                  initial={{ opacity: 0, x: -24 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+                >
+                  <JobCard job={job} num={i + 1} defaultOpen={i === 0} />
+                </motion.div>
+
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </section>
   )

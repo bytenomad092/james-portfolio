@@ -70,7 +70,7 @@ export default function Footer() {
             <motion.div className="md:col-span-5" variants={fadeLeft}>
               <Logo size="md" />
               <p className="mt-4 text-sm text-slate-400 leading-relaxed max-w-md">
-                Staff Frontend Engineer specializing in GenAI product experiences, frontend architecture, and performance.
+                Senior Frontend Engineer specializing in GenAI product experiences, frontend architecture, and performance.
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-slate-400">
                 <span className="inline-flex items-center gap-2 rounded-full px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>

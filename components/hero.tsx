@@ -1,8 +1,9 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Github, Linkedin, Mail, MapPin, ArrowRight, Download, Code2, Zap, Cloud, Cpu, Layers } from 'lucide-react'
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
+import Image from 'next/image'
 import { scrollToSection } from '@/lib/scroll'
 import SplitText from './split-text'
 
@@ -17,6 +18,13 @@ const miniStats = [
   { value: '3B+',  label: 'Users Served',  color: '#06b6d4' },
   { value: '$4B+', label: 'Revenue',       color: '#a78bfa' },
   { value: '15+',  label: 'Ent. Apps',     color: '#f472b6' },
+]
+
+const statusItems = [
+  'obsessing over LLM latency',
+  'shipping enterprise apps',
+  'turning coffee into code',
+  'building things that scale',
 ]
 
 const techBadges = [
@@ -56,6 +64,12 @@ export default function Hero() {
     rawY.set(0)
   }
 
+  const [statusIdx, setStatusIdx] = useState(0)
+  useEffect(() => {
+    const timer = setInterval(() => setStatusIdx(i => (i + 1) % statusItems.length), 2500)
+    return () => clearInterval(timer)
+  }, [])
+
   return (
     <section
       ref={sectionRef}
@@ -92,7 +106,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2.5 rounded-full px-4 py-2 mb-8 cursor-default"
+              className="inline-flex items-center gap-2.5 rounded-full px-4 py-2 mb-4 cursor-default"
               style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.32)' }}
             >
               <span className="relative flex h-2 w-2">
@@ -100,7 +114,7 @@ export default function Hero() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
               <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-300">
-                Open to Staff / Principal roles
+                Open to new opportunities
               </span>
               <span
                 className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
@@ -108,6 +122,30 @@ export default function Hero() {
               >
                 Available
               </span>
+            </motion.div>
+
+            {/* Terminal-style rotating status */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.08 }}
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 mb-6 font-mono text-[11px] cursor-default"
+              style={{ background: 'rgba(6,182,212,0.07)', border: '1px solid rgba(6,182,212,0.2)' }}
+            >
+              <span className="text-cyan-400 select-none">~$</span>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={statusIdx}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.28 }}
+                  className="text-slate-300"
+                >
+                  {statusItems[statusIdx]}
+                </motion.span>
+              </AnimatePresence>
+              <span className="inline-block w-1.5 h-3.5 bg-cyan-400/70 animate-pulse rounded-[1px]" />
             </motion.div>
 
             {/* Main headline — clip-path reveal + SplitText */}
@@ -145,7 +183,7 @@ export default function Hero() {
               transition={{ duration: 0.7, delay: 0.35 }}
               className="text-base sm:text-lg text-slate-400 max-w-[520px] leading-relaxed"
             >
-              I&apos;m <span className="text-white font-semibold">James Nguyen</span> — Staff Frontend Engineer
+              I&apos;m <span className="text-white font-semibold">James Nguyen</span> — Senior Frontend Engineer
               at the intersection of{' '}
               <span className="text-violet-300 font-semibold">AI products</span>,{' '}
               <span className="text-cyan-300 font-semibold">performance engineering</span>, and{' '}
@@ -250,50 +288,56 @@ export default function Hero() {
             style={{ x: orbX, y: orbY }}
             className="hidden lg:flex lg:col-span-5 items-center justify-center"
           >
-            <div className="relative w-[380px] h-[380px]">
+            <div className="relative w-[460px] h-[460px]">
 
-              {/* Glow halos */}
-              <div className="absolute inset-0 rounded-full bg-violet-600/22 blur-[80px]" />
-              <div className="absolute inset-[40px] rounded-full bg-fuchsia-600/15 blur-[55px]" />
-              <div className="absolute inset-[80px] rounded-full bg-cyan-600/10 blur-[40px]" />
+              {/* Glow halos — electric palette */}
+              <div className="absolute inset-0 rounded-full bg-violet-600/25 blur-[90px]" />
+              <div className="absolute inset-[40px] rounded-full bg-fuchsia-500/20 blur-[65px]" />
+              <div className="absolute inset-[90px] rounded-full bg-cyan-500/12 blur-[45px]" />
 
               {/* Outer spinning ring + dot */}
-              <div className="absolute inset-0 rounded-full border border-violet-400/20 animate-spin-slow">
+              <div className="absolute inset-0 rounded-full border border-violet-400/25 animate-spin-slow">
                 <div
-                  className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-violet-400"
-                  style={{ boxShadow: '0 0 10px rgba(139,92,246,0.9)' }}
+                  className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-violet-400"
+                  style={{ boxShadow: '0 0 14px rgba(168,85,247,1), 0 0 28px rgba(168,85,247,0.5)' }}
                 />
               </div>
 
               {/* Middle spinning ring (reverse) + dot */}
-              <div className="absolute inset-[52px] rounded-full border border-fuchsia-400/30 animate-spin-reverse">
+              <div className="absolute inset-[62px] rounded-full border border-fuchsia-400/35 animate-spin-reverse">
                 <div
-                  className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-fuchsia-400"
-                  style={{ boxShadow: '0 0 8px rgba(244,114,182,0.9)' }}
+                  className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-fuchsia-400"
+                  style={{ boxShadow: '0 0 12px rgba(232,121,249,1), 0 0 24px rgba(232,121,249,0.5)' }}
                 />
               </div>
 
               {/* Inner ring */}
               <div
-                className="absolute inset-[104px] rounded-full border border-cyan-400/25"
+                className="absolute inset-[124px] rounded-full border border-cyan-400/30"
                 style={{ animation: 'spin-slow 22s linear infinite' }}
               >
                 <div
-                  className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-cyan-400"
-                  style={{ boxShadow: '0 0 6px rgba(6,182,212,0.9)' }}
+                  className="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-cyan-400"
+                  style={{ boxShadow: '0 0 10px rgba(34,211,238,1), 0 0 20px rgba(34,211,238,0.5)' }}
                 />
               </div>
 
-              {/* Center avatar */}
+              {/* Center avatar — much larger */}
               <motion.div
-                className="absolute inset-[138px] rounded-full bg-gradient-to-br from-violet-500 via-purple-600 to-fuchsia-600 flex items-center justify-center select-none"
+                className="absolute inset-[105px] rounded-full overflow-hidden animate-electric"
                 style={{
-                  boxShadow: '0 0 0 4px rgba(139,92,246,0.18), 0 0 55px rgba(139,92,246,0.65), 0 0 110px rgba(139,92,246,0.25)',
+                  boxShadow: '0 0 0 3px rgba(168,85,247,0.5), 0 0 0 6px rgba(168,85,247,0.15), 0 0 60px rgba(168,85,247,0.7), 0 0 120px rgba(232,121,249,0.3)',
                 }}
-                whileHover={{ scale: 1.08 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                whileHover={{ scale: 1.06 }}
+                transition={{ type: 'spring', stiffness: 280, damping: 22 }}
               >
-                <span className="text-3xl font-black text-white tracking-tight">JN</span>
+                <Image
+                  src="/avatar.jpg"
+                  alt="James Nguyen"
+                  fill
+                  className="object-cover object-top"
+                  priority
+                />
               </motion.div>
 
               {/* Floating tech badges */}
